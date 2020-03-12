@@ -42,10 +42,10 @@ public class InputData {
                     case '#':
                         break;
                     case '_':
-                        devPlaces.add(new Coord(i,j));
+                        devPlaces.add(new Coord(j,i));
                         break;
                     case 'M':
-                        managePlaces.add(new Coord(i,j));
+                        managePlaces.add(new Coord(j,i));
                         break;
                 }
                 j++;
@@ -96,7 +96,7 @@ public class InputData {
                 a.setXPosition(c.getX());
                 a.setYPosition(c.getY());
                 a.setPlaced(true);
-                floor[c.getX()][c.getY()].setPerson(a);
+                floor[c.getY()][c.getX()].setPerson(a);
                 flag = true;
             }
             if(!managePlaces.isEmpty() && !managers.isEmpty()){
@@ -105,7 +105,7 @@ public class InputData {
                 a.setXPosition(c.getX());
                 a.setYPosition(c.getY());
                 a.setPlaced(true);
-                floor[c.getX()][c.getY()].setPerson(a);
+                floor[c.getY()][c.getX()].setPerson(a);
                 flag = true;
             }
         }
