@@ -36,8 +36,12 @@ public class ReplyChallengeApplication implements CommandLineRunner {
     }
     private void mamma(String filename,String out) throws IOException {
        InputData a = new InputData(filename);
-       a.calcEdges();
        //while (!a.getPersonQueue().isEmpty())System.out.println(a.getPersonQueue().poll());
+        Solver solver = new Solver(a, a.getFloor().length, a.getFloor()[0].length);
+        solver.solve();
+        Solution s = new Solution(a.getPersons().toArray(new Person[0]), a.getFloor(),
+                a.getFloor().length, a.getFloor()[0].length);
+        s.saveInFile("./src/main/resources/" + out + ".txt");
     }
 
     @Override
