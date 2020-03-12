@@ -4,12 +4,13 @@ import lombok.Data;
 
 @Data
 public class Place {
-    private Person person;
+    private Person person = null;
 
-    // 0 --> DEVELOPER
-    // 1 --> MANAGER
-    // 2 --> WALL
-    // 3 --> OCCUPATO
-    private int type;
+
+    private char type;
+
+    public Place(char type){
+        this.type=type;
+    }
 
 }

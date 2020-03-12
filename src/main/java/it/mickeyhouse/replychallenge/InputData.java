@@ -26,25 +26,14 @@ public class InputData {
         str = in.readLine();
         int row=Integer.parseInt(str.split(" ")[1]);
         int col=Integer.parseInt(str.split(" ")[0]);
-        floor=new int[row][col];
+        floor=new Place[row][col];
         for(int i=0;i<row;i++){
             int j=0;
             str = in.readLine();
             for(char c : str.toCharArray()){
-                switch (c){
-                    case '#':
-                        floor[i][j]=2;
-                        break;
-                    case '_':
-                        floor[i][j]=0;
-                        break;
-                    case 'M':
-                        floor[i][j]=1;
-                        break;
-                    default:
-                        throw new RuntimeException("1");
-                }
+                floor[i][j]=new Place(c);
                 j++;
+                if(j>=col)break;
             }
         }
 
