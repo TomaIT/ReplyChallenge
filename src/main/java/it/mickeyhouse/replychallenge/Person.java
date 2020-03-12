@@ -8,9 +8,9 @@ public class Person implements Comparable<Person> {
     private int bonus;
     private int orderFile;
 
-    private int xPosition;
-    private int yPosition;
-    private boolean placed;
+    private int xPosition=-1;
+    private int yPosition=-1;
+    private boolean placed=false;
 
     @Override
     public int compareTo(Person o) {

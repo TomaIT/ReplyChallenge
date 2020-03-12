@@ -15,7 +15,8 @@ public class ReplyChallengeApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
+        InputData input=new InputData("./src/main/resources/a_solar.txt");
+        System.out.println(input);
     }
 
 }
