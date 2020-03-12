@@ -8,11 +8,15 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static java.util.stream.Collectors.groupingBy;
+
 @Data
 @NoArgsConstructor
 public class InputData {
     private Place[][] floor;
     private TreeSet<Person> persons=new TreeSet<>();
+
+    private RandomPriorityQueue<Edge> personQueue=new RandomPriorityQueue<>(1000*1000 , (a,b) -> b.score - a.score);
 
     private LinkedList<Developer> developers=new LinkedList<>();
     private LinkedList<Manager> managers=new LinkedList<>();
@@ -79,6 +83,25 @@ public class InputData {
             managers.add(d);
         }
         in.close();
+        calcEdges();
+    }
+
+    public void calcEdges(){
+        ArrayList<Person> temp=new ArrayList<>(developers);
+        temp.addAll(managers);
+
+        Map<String, List<Person>> persPerSoc = persons.stream()
+                .collect(groupingBy(Person::getSociety));
+
+        persPerSoc.entrySet().stream().forEach(x->{
+            for(Person a : x.getValue()){
+                for (Person b : x.getValue() ){
+                    if(a.equals(b))continue;
+                    personQueue.add(new Edge(a,b));
+                }
+            }
+        });
+
     }
 
     public void findRandomSolution(){
@@ -146,4 +169,15 @@ class Coord{
     private int x;
     private int y;
 }
+@Data
+class Edge{
+    Person a;
+    Person b;
+    int score;
 
+    public Edge(Person a,Person b){
+        this.a=a;
+        this.b=b;
+        score=a.getBP(b) + a.getWP(b);
+    }
+}

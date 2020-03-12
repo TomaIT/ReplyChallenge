@@ -5,6 +5,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @SpringBootApplication
@@ -32,16 +34,29 @@ public class ReplyChallengeApplication implements CommandLineRunner {
         System.out.println(bestScore);
         best.saveInFile("./src/main/resources/" + out + ".txt");
     }
+    private void mamma(String filename,String out) throws IOException {
+       InputData a = new InputData(filename);
+       a.calcEdges();
+       //while (!a.getPersonQueue().isEmpty())System.out.println(a.getPersonQueue().poll());
+    }
 
     @Override
     public void run(String... args) throws Exception {
-        findAndSolveRandom("./src/main/resources/a_solar.txt","a");
-        findAndSolveRandom("./src/main/resources/b_dream.txt","b");
-        findAndSolveRandom("./src/main/resources/c_soup.txt","c");
-        findAndSolveRandom("./src/main/resources/d_maelstrom.txt","d");
-        findAndSolveRandom("./src/main/resources/e_igloos.txt","e");
-        findAndSolveRandom("./src/main/resources/f_glitch.txt","f");
+        List<String> x=new ArrayList<>();
+        x.add("./src/main/resources/a_solar.txt");
+        x.add("./src/main/resources/b_dream.txt");
+        x.add("./src/main/resources/c_soup.txt");
+        x.add("./src/main/resources/d_maelstrom.txt");
+        x.add("./src/main/resources/e_igloos.txt");
+        x.add("./src/main/resources/f_glitch.txt");
 
+        int i=0;
+        for(String s:x){
+            System.out.println(i);
+            mamma(s,String.valueOf(i));
+            i++;
+
+        }
     }
 
 }
