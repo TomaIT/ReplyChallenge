@@ -10,7 +10,7 @@ import java.util.TreeSet;
 @Data
 @NoArgsConstructor
 public class InputData {
-    private int[][] floor;
+    private Place[][] floor;
     private TreeSet<Person> persons=new TreeSet<>();
 
 
@@ -72,5 +72,9 @@ public class InputData {
             persons.add(d);
         }
         in.close();
+    }
+
+    public void findRandomSolution(){
+
     }
 }
