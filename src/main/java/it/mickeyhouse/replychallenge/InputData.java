@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 @NoArgsConstructor
 public class InputData {
 
+
     public InputData(String fileName) throws IOException {
         this.loadDataFromFile(fileName);
     }
