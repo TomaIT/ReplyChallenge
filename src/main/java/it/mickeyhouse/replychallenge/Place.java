@@ -6,7 +6,6 @@ import lombok.Data;
 public class Place {
     private Person person = null;
 
-
     private char type;
 
     public Place(char type){
