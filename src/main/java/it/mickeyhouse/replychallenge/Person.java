@@ -29,7 +29,7 @@ public class Person implements Comparable<Person> {
         c.addAll(b.getSkills());
         int common = a.getSkills().size() + b.getSkills().size() - c.size();
 
-        return common * c.size();
+        return common * (c.size()-common);
     }
 
     public int getBP(Person p){

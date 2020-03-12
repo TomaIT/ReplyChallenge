@@ -9,18 +9,28 @@ import java.util.Random;
 
 @SpringBootApplication
 public class ReplyChallengeApplication implements CommandLineRunner {
+    int n=3;
 
     public static void main(String[] args) {
         SpringApplication.run(ReplyChallengeApplication.class, args);
     }
 
     private void findAndSolveRandom(String filename,String out) throws IOException {
-        InputData a=new InputData(filename);
-        a.findRandomSolution();
-        Solution s = new Solution(a.getPersons().toArray(new Person[0]),a.getFloor(),
-                a.getFloor().length,a.getFloor()[0].length);
-        s.saveInFile("./src/main/resources/"+out+".txt");
-        System.out.println(s.getScore());
+        long bestScore = -1;
+        Solution best = null;
+        for(int i=0;i<n;i++) {
+            InputData a = new InputData(filename);
+            a.findRandomSolution();
+            Solution s = new Solution(a.getPersons().toArray(new Person[0]), a.getFloor(),
+                    a.getFloor().length, a.getFloor()[0].length);
+            long t=s.getScore();
+            if(t>bestScore){
+                bestScore = t;
+                best = s;
+            }
+        }
+        System.out.println(bestScore);
+        best.saveInFile("./src/main/resources/" + out + ".txt");
     }
 
     @Override
