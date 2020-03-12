@@ -2,6 +2,8 @@ package it.mickeyhouse.replychallenge;
 
 import lombok.Data;
 
+import java.util.HashSet;
+
 @Data
 public class Person implements Comparable<Person> {
     private String society;
@@ -15,5 +17,13 @@ public class Person implements Comparable<Person> {
     @Override
     public int compareTo(Person o) {
         return orderFile - o.orderFile;
+    }
+
+    public int getWP(Person p){
+
+    }
+
+    public int getBP(Person p){
+
     }
 }
