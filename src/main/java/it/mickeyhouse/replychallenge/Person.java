@@ -20,10 +20,10 @@ public class Person implements Comparable<Person> {
     }
 
     public int getWP(Person p){
-
+        return 0;
     }
 
     public int getBP(Person p){
-
+        return 0;
     }
 }
