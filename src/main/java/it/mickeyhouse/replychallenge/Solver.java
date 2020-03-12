@@ -1,7 +1,5 @@
 package it.mickeyhouse.replychallenge;
 
-import javafx.geometry.Pos;
-import sun.font.CompositeStrike;
 
 public class Solver {
 
@@ -84,7 +82,7 @@ public class Solver {
                     if (inputData.getFloor()[i+1][j].getPerson() == null) {
                         positions[0].setX(j);
                         positions[0].setY(i);
-                        positions[0].setX(j);
+                        positions[1].setX(j);
                         positions[1].setY(i+1);
                         return positions;
                     }

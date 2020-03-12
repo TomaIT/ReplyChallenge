@@ -87,20 +87,22 @@ public class InputData {
     }
 
     public void calcEdges(){
-        ArrayList<Person> temp=new ArrayList<>(developers);
-        temp.addAll(managers);
 
-        Map<String, List<Person>> persPerSoc = persons.stream()
+        Map<String, List<Person>> personsPerSoc = persons.stream()
                 .collect(groupingBy(Person::getSociety));
 
-        persPerSoc.entrySet().stream().forEach(x->{
+        personsPerSoc.entrySet().stream().forEach(x->{
             for(Person a : x.getValue()){
                 for (Person b : x.getValue() ){
                     if(a.equals(b))continue;
+                    //a.setMarker(true);
+                    //b.setMarker(true);
                     personQueue.add(new Edge(a,b));
                 }
             }
         });
+
+        //System.out.println(persons.stream().filter(x->!x.isMarker()).count());
 
     }
 
@@ -169,6 +171,7 @@ class Coord{
     private int x;
     private int y;
 }
+
 @Data
 class Edge{
     Person a;

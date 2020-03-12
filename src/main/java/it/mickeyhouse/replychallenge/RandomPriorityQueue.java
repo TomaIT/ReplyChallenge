@@ -2,7 +2,7 @@ package it.mickeyhouse.replychallenge;
 
 import java.util.*;
 
-public class RandomPriorityQueue<E> extends PriorityQueue {
+public class RandomPriorityQueue<E> extends PriorityQueue { // 25.034.522
     private static final Random random = new Random();
     private static final int maxN = 32;
     private static final Object[] objects = new Object[maxN];

@@ -13,6 +13,7 @@ public class Person implements Comparable<Person> {
     private int xPosition=-1;
     private int yPosition=-1;
     private boolean placed=false;
+    private boolean marker=false;
 
     @Override
     public int compareTo(Person o) {
