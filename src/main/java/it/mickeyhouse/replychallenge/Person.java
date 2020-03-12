@@ -20,10 +20,20 @@ public class Person implements Comparable<Person> {
     }
 
     public int getWP(Person p){
-        return 0;
+        if(this instanceof Manager || p instanceof Manager)return 0;
+
+        Developer a = (Developer) this;
+        Developer b = (Developer) p;
+
+        HashSet<String> c = new HashSet<>(a.getSkills());
+        c.addAll(b.getSkills());
+        int common = a.getSkills().size() + b.getSkills().size() - c.size();
+
+        return common * c.size();
     }
 
     public int getBP(Person p){
-        return 0;
+        if(!p.society.equals(this.society))return 0;
+        return p.bonus*this.bonus;
     }
 }
