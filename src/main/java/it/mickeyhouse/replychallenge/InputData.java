@@ -323,4 +323,39 @@ public class InputData {
         System.out.println("Dev Free: "+developers.stream().filter(x->!x.isPlaced()).count());
         System.out.println("Man Free: "+managers.stream().filter(x->!x.isPlaced()).count());
     }
+
+    private void swap(Person a,Person b){
+        int tx=a.getXPosition(),ty=a.getYPosition();
+        floor[ty][tx].setPerson(b);
+        floor[b.getYPosition()][b.getXPosition()].setPerson(a);
+        a.setXPosition(b.getXPosition());
+        a.setYPosition(b.getYPosition());
+        b.setYPosition(ty);
+        b.setXPosition(tx);
+    }
+
+    public void checkScoreSwap(Person a,Person b){
+        if( a.isPlaced() && b.isPlaced() ){
+            int oldScore = getScore(floor[a.getYPosition()][a.getXPosition()],a) +
+                    getScore(floor[b.getYPosition()][b.getXPosition()],b);
+            swap(a,b);
+            int newScore = getScore(floor[a.getYPosition()][a.getXPosition()],a) +
+                    getScore(floor[b.getYPosition()][b.getXPosition()],b);
+            if(newScore >= oldScore) return;
+            swap(a,b);
+        }
+    }
+
+    private int getScore(Place place,Person a){
+        int i = place.getY();
+        int j = place.getX();
+        int score = 0;
+
+        if( i+1 < floor.length) score += a.getBP(floor[i+1][j].getPerson()) + a.getWP(floor[i+1][j].getPerson());
+        if( j+1 < floor[i].length) score += a.getBP(floor[i][j+1].getPerson()) + a.getWP(floor[i][j+1].getPerson());
+        if( i-1 >= 0 ) score += a.getBP(floor[i-1][j].getPerson()) + a.getWP(floor[i-1][j].getPerson());
+        if( j-1 >= 0 ) score += a.getBP(floor[i][j-1].getPerson()) + a.getWP(floor[i][j-1].getPerson());
+
+        return score;
+    }
 }

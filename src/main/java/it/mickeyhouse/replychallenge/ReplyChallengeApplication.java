@@ -10,22 +10,38 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @SpringBootApplication
 public class ReplyChallengeApplication implements CommandLineRunner {
-    int n=1;
+    int N=1;
+    int K=10;
 
     public static void main(String[] args) {
         SpringApplication.run(ReplyChallengeApplication.class, args);
     }
 
+    private void findBestSwapping(InputData a){
+        LinkedList<Person> people = new LinkedList<>(a.getDevelopers());
+        people.addAll(a.getManagers());
+        Collections.shuffle(people);
+        for(int i=0;i<people.size()-1;i++){
+            Person x = people.get(i);
+            i++;
+            Person y = people.get(i);
+            a.checkScoreSwap(x,y);
+        }
+    }
+
     private long findAndSolve(String filename,int nFile) throws IOException {
         long bestScore = -1;
         Solution best = null;
-        for(int i=0;i<n;i++) {
+        for(int i=0;i<N;i++) {
             InputData a = new InputData(filename);
             a.initPQueue();
             a.initPlacePairs();
             a.findSolution();
             a.finalFillPlaces();
-            a.statistics();
+            Solution s1 = new Solution(a.getPersons().toArray(new Person[0]), a.getFloor(),
+                    a.getFloor().length, a.getFloor()[0].length);
+            System.out.println(s1.getScore());
+            for(int k=0;k<K;k++)findBestSwapping(a);
             Solution s = new Solution(a.getPersons().toArray(new Person[0]), a.getFloor(),
                     a.getFloor().length, a.getFloor()[0].length);
             long t = s.getScore();
@@ -40,7 +56,7 @@ public class ReplyChallengeApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception { // 22.789.689 180s
+    public void run(String... args) throws Exception {
         Map<Integer,String> files=new HashMap<>();
         files.put(0,"./src/main/resources/a_solar.txt");
         files.put(1,"./src/main/resources/b_dream.txt");
