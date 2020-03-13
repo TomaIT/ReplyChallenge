@@ -14,14 +14,7 @@ public class PlacePair {
         this.b=b;
         this.type=placePairType;
     }
-
-    public int getNearPersons(){
-        if(a.getNearPersons()>=0 && b.getNearPersons()>=0)
-            return a.getNearPersons()+b.getNearPersons();
-        if(a.getNearPersons()>=0)return a.getNearPersons();
-        if(b.getNearPersons()>=0)return b.getNearPersons();
-        return Integer.MAX_VALUE;
-    }
+    
 }
 
 enum PlacePairType {

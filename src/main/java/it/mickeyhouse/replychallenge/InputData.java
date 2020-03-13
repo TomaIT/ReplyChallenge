@@ -132,7 +132,7 @@ public class InputData {
         Collections.shuffle(placePairsDM_MD);
     }
 
-    public void findSolution(){
+    private void myRoutine(boolean updatePeoplePlace){
         while(!pQueue.isEmpty()){
             ItemPQ itemPQ = pQueue.poll();
             if( itemPQ instanceof PeoplePair ){
@@ -141,40 +141,58 @@ public class InputData {
                 if( !e.a.isPlaced() && !e.b.isPlaced() ){
                     Place[] p = findTwoPlacesFree( e.a.getType(), e.b.getType());
                     if(p == null)continue;
-                    places(e.a,p[0]);
-                    places(e.b,p[1]);
+                    places(e.a,p[0],updatePeoplePlace);
+                    places(e.b,p[1],updatePeoplePlace);
                     continue;
                 }
                 if( e.a.isPlaced() && !e.b.isPlaced() ){
                     Place p = findNearPlaceFree(e.a,e.b.getType());
                     if(p == null)continue;
-                    places(e.b,p);
+                    places(e.b,p,updatePeoplePlace);
                     continue;
                 }
                 if( !e.a.isPlaced() && e.b.isPlaced() ){
                     Place p = findNearPlaceFree(e.b,e.a.getType());
                     if(p == null)continue;
-                    places(e.a,p);
+                    places(e.a,p,updatePeoplePlace);
                     continue;
                 }
             }
             if( itemPQ instanceof PeoplePlace ){
                 PeoplePlace p = (PeoplePlace) itemPQ;
                 if( p.place.getPerson() == null && p.place.getType() == p.person.getType() && !p.person.isPlaced()){
-                    places(p.person,p.place);
+                    places(p.person,p.place,updatePeoplePlace);
                 }
             }
 
         }
     }
 
-    public void places(Person a,Place place){
+    public void findSolution(){
+        myRoutine(true);
+    }
+
+    public void finalFillPlaces(){
+        placesDevMan.stream().filter(x->x.getType()=='_'&&x.getPerson()==null).forEach(place->{
+            developers.stream().filter(x->!x.isPlaced()).forEach(person->{
+                pQueue.add(new PeoplePlace(floor,person,place));
+            });
+        });
+        placesDevMan.stream().filter(x->x.getType()=='M'&&x.getPerson()==null).forEach(place->{
+            managers.stream().filter(x->!x.isPlaced()).forEach(person->{
+                pQueue.add(new PeoplePlace(floor,person,place));
+            });
+        });
+        myRoutine(false);
+    }
+
+    public void places(Person a,Place place,boolean update){
         a.setPlaced(true);
         a.setXPosition(place.getX());
         a.setYPosition(place.getY());
         place.setPerson(a);
 
-        updateNearPersons(a,place.getY(),place.getX(),3);
+        if(update)updateNearPersons(a,place.getY(),place.getX(),3);
 
     }
 
@@ -299,4 +317,10 @@ public class InputData {
         return places.get(0);
     }
 
+    public void statistics(){
+        System.out.println("Dev Places Free: "+placesDevMan.stream().filter(x->x.getType()=='_'&&x.getPerson()==null).count());
+        System.out.println("Man Places Free: "+placesDevMan.stream().filter(x->x.getType()=='M'&&x.getPerson()==null).count());
+        System.out.println("Dev Free: "+developers.stream().filter(x->!x.isPlaced()).count());
+        System.out.println("Man Free: "+managers.stream().filter(x->!x.isPlaced()).count());
+    }
 }

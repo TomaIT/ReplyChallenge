@@ -24,6 +24,8 @@ public class ReplyChallengeApplication implements CommandLineRunner {
             a.initPQueue();
             a.initPlacePairs();
             a.findSolution();
+            a.finalFillPlaces();
+            a.statistics();
             Solution s = new Solution(a.getPersons().toArray(new Person[0]), a.getFloor(),
                     a.getFloor().length, a.getFloor()[0].length);
             long t = s.getScore();
@@ -32,6 +34,7 @@ public class ReplyChallengeApplication implements CommandLineRunner {
                 best = s;
             }
         }
+
         best.saveInFile("./src/main/resources/solutions/"+ nFile+"_"+bestScore+ ".txt");
         return bestScore;
     }
