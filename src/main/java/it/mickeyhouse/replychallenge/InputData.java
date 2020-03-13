@@ -334,7 +334,19 @@ public class InputData {
         b.setXPosition(tx);
     }
 
+    private void swapAssigning(Person a,Person b){
+        int tx=a.getXPosition(),ty=a.getYPosition();
+        floor[ty][tx].setPerson(b);
+        a.setXPosition(-1);
+        a.setYPosition(-1);
+        a.setPlaced(false);
+        b.setYPosition(ty);
+        b.setXPosition(tx);
+        b.setPlaced(true);
+    }
+
     public void checkScoreSwap(Person a,Person b){
+        if(a.getType() != b.getType())return;
         if( a.isPlaced() && b.isPlaced() ){
             int oldScore = getScore(floor[a.getYPosition()][a.getXPosition()],a) +
                     getScore(floor[b.getYPosition()][b.getXPosition()],b);
@@ -343,6 +355,20 @@ public class InputData {
                     getScore(floor[b.getYPosition()][b.getXPosition()],b);
             if(newScore >= oldScore) return;
             swap(a,b);
+        }
+        if( a.isPlaced() && !b.isPlaced() ){
+            int oldScore = getScore(floor[a.getYPosition()][a.getXPosition()],a);
+            swapAssigning(a,b);
+            int newScore = getScore(floor[b.getYPosition()][b.getXPosition()],b);
+            if(newScore >= oldScore) return;
+            swapAssigning(b,a);
+        }
+        if( !a.isPlaced() && b.isPlaced() ){
+            int oldScore = getScore(floor[b.getYPosition()][b.getXPosition()],b);
+            swapAssigning(b,a);
+            int newScore = getScore(floor[a.getYPosition()][a.getXPosition()],a);
+            if(newScore >= oldScore) return;
+            swapAssigning(a,b);
         }
     }
 
