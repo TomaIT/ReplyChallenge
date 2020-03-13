@@ -27,7 +27,6 @@ public class Solution {
     public void saveInFile(String fileName) throws IOException {
         File f = new File(fileName);
         FileUtils.writeStringToFile(f, this.toString(), StandardCharsets.UTF_8);
-
     }
 
     public String toString() {

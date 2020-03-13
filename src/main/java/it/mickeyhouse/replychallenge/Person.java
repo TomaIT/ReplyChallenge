@@ -26,13 +26,8 @@ public class Person implements Comparable<Person> {
         return 'X';
     }
 
-    public void places(Coord coord){
-        placed = true;
-        xPosition = coord.getX();
-        yPosition = coord.getY();
-    }
-
     public int getWP(Person p){
+        if( p == null )return 0;
         if(this instanceof Manager || p instanceof Manager)return 0;
 
         Developer a = (Developer) this;
@@ -46,7 +41,8 @@ public class Person implements Comparable<Person> {
     }
 
     public int getBP(Person p){
-        if(!p.society.equals(this.society))return 0;
+        if( p == null )return 0;
+        if( !p.society.equals(this.society) )return 0;
         return p.bonus*this.bonus;
     }
 }

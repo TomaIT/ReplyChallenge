@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 
@@ -16,13 +17,16 @@ public class InputData {
     private Place[][] floor;
     private TreeSet<Person> persons=new TreeSet<>();
 
-    private RandomPriorityQueue<Edge> personQueue=new RandomPriorityQueue<>(1000*1000 , (a,b) -> b.score - a.score);
+    private int[][] nearPersons;
 
     private LinkedList<Developer> developers=new LinkedList<>();
     private LinkedList<Manager> managers=new LinkedList<>();
+    private LinkedList<Place> placesDevMan = new LinkedList<>();
+    private LinkedList<PlacePair> placePairsDD = new LinkedList<>();
+    private LinkedList<PlacePair> placePairsMM = new LinkedList<>();
+    private LinkedList<PlacePair> placePairsDM_MD = new LinkedList<>();
 
-    private LinkedList<Coord> devPlaces=new LinkedList<>();
-    private LinkedList<Coord> managePlaces=new LinkedList<>();
+    private PriorityQueue<ItemPQ> pQueue = new PriorityQueue<>(1000*1000,(a,b)->b.getScore()-a.getScore());
 
     public InputData(String fileName) throws IOException {
         this.loadDataFromFile(fileName);
@@ -40,17 +44,8 @@ public class InputData {
             int j=0;
             str = in.readLine();
             for(char c : str.toCharArray()){
-                floor[i][j]=new Place(c);
-                switch (c){
-                    case '#':
-                        break;
-                    case '_':
-                        devPlaces.add(new Coord(j,i));
-                        break;
-                    case 'M':
-                        managePlaces.add(new Coord(j,i));
-                        break;
-                }
+                floor[i][j]=new Place(c,j,i);
+                if(c == '_' || c == 'M') placesDevMan.add(floor[i][j]);
                 j++;
                 if(j>=col)break;
             }
@@ -82,11 +77,23 @@ public class InputData {
             managers.add(d);
         }
         in.close();
-        //calcEdges();
+
+        nearPersons = new int[row][col];
+        for(int i=0;i<row;i++){
+            for(int j=0;j<col;j++){
+                if(floor[i][j].getType() == '#'){
+                    floor[i][j].setNearPersons(-1);
+                    nearPersons[i][j]=-1;
+                }
+                else{
+                    floor[i][j].setNearPersons(0);
+                    nearPersons[i][j]=0;
+                }
+            }
+        }
     }
 
-    public void calcEdges(){
-
+    public void initPQueue(){
         Map<String, List<Person>> personsPerSoc = persons.stream()
                 .collect(groupingBy(Person::getSociety));
 
@@ -94,146 +101,202 @@ public class InputData {
             for(Person a : x.getValue()){
                 for (Person b : x.getValue() ){
                     if(a.equals(b))continue;
-                    //a.setMarker(true);
-                    //b.setMarker(true);
-                    personQueue.add(new Edge(a,b));
+                    pQueue.add(new PeoplePair(a,b));
                 }
             }
         });
-
-        //System.out.println(persons.stream().filter(x->!x.isMarker()).count());
-
     }
 
-    public void findRandomSolution(){
-        Collections.shuffle(developers);
-        Collections.shuffle(managers);
-        Collections.shuffle(devPlaces);
-        Collections.shuffle(managePlaces);
-
-        boolean flag = true;
-        while (flag){
-            flag = false;
-            if(!devPlaces.isEmpty() && !developers.isEmpty()){
-                Person a = developers.poll();
-                Coord c = devPlaces.poll();
-                a.setXPosition(c.getX());
-                a.setYPosition(c.getY());
-                a.setPlaced(true);
-                floor[c.getY()][c.getX()].setPerson(a);
-                flag = true;
-            }
-            if(!managePlaces.isEmpty() && !managers.isEmpty()){
-                Person a = managers.poll();
-                Coord c = managePlaces.poll();
-                a.setXPosition(c.getX());
-                a.setYPosition(c.getY());
-                a.setPlaced(true);
-                floor[c.getY()][c.getX()].setPerson(a);
-                flag = true;
+    public void initPlacePairs(){
+        for(int i=0;i<floor.length;i++){
+            for(int j=0;j<floor[i].length;j++){
+                char a = floor[i][j].getType();
+                if( i+1 < floor.length){
+                    char b = floor[i+1][j].getType();
+                    if( a == b && a == '_' )placePairsDD.add(new PlacePair(floor[i][j],floor[i+1][j],PlacePairType.DD));
+                    if( a == b && a == 'M' )placePairsMM.add(new PlacePair(floor[i][j],floor[i+1][j],PlacePairType.MM));
+                    if( a == '_' && b == 'M' )placePairsDM_MD.add(new PlacePair(floor[i][j],floor[i+1][j],PlacePairType.DM));
+                    if( a == 'M' && b == '_' )placePairsDM_MD.add(new PlacePair(floor[i][j],floor[i+1][j],PlacePairType.MD));
+                }
+                if( j+1 < floor[i].length){
+                    char b = floor[i][j+1].getType();
+                    if( a == b && a == '_' )placePairsDD.add(new PlacePair(floor[i][j],floor[i][j+1],PlacePairType.DD));
+                    if( a == b && a == 'M' )placePairsMM.add(new PlacePair(floor[i][j],floor[i][j+1],PlacePairType.MM));
+                    if( a == '_' && b == 'M' )placePairsDM_MD.add(new PlacePair(floor[i][j],floor[i][j+1],PlacePairType.DM));
+                    if( a == 'M' && b == '_' )placePairsDM_MD.add(new PlacePair(floor[i][j],floor[i][j+1],PlacePairType.MD));
+                }
             }
         }
+        Collections.shuffle(placePairsDD);
+        Collections.shuffle(placePairsMM);
+        Collections.shuffle(placePairsDM_MD);
     }
 
     public void findSolution(){
-        while(!personQueue.isEmpty()){
-            Edge e = (Edge) personQueue.poll();
-            if( e.a.isPlaced() && e.b.isPlaced() )continue;
-            if( !e.a.isPlaced() && !e.b.isPlaced() ){
-                Coord[] c = findTwoPlacesFree(e.a.getType(),e.b.getType());
-                if(c == null)continue;
-                places(e.a,c[0]);
-                places(e.b,c[1]);
-                continue;
+        while(!pQueue.isEmpty()){
+            ItemPQ itemPQ = pQueue.poll();
+            if( itemPQ instanceof PeoplePair ){
+                PeoplePair e = (PeoplePair) itemPQ;
+                if( e.a.isPlaced() && e.b.isPlaced() )continue;
+                if( !e.a.isPlaced() && !e.b.isPlaced() ){
+                    Place[] p = findTwoPlacesFree( e.a.getType(), e.b.getType());
+                    if(p == null)continue;
+                    places(e.a,p[0]);
+                    places(e.b,p[1]);
+                    continue;
+                }
+                if( e.a.isPlaced() && !e.b.isPlaced() ){
+                    Place p = findNearPlaceFree(e.a,e.b.getType());
+                    if(p == null)continue;
+                    places(e.b,p);
+                    continue;
+                }
+                if( !e.a.isPlaced() && e.b.isPlaced() ){
+                    Place p = findNearPlaceFree(e.b,e.a.getType());
+                    if(p == null)continue;
+                    places(e.a,p);
+                    continue;
+                }
             }
-            if( e.a.isPlaced() && !e.b.isPlaced() ){
-                Coord c = getNearPlaceFree(e.a,e.b.getType());
-                if(c==null)continue;
-                places(e.b,c);
-                continue;
+            if( itemPQ instanceof PeoplePlace ){
+                PeoplePlace p = (PeoplePlace) itemPQ;
+                if( p.place.getPerson() == null && p.place.getType() == p.person.getType() && !p.person.isPlaced()){
+                    places(p.person,p.place);
+                }
             }
-            if( !e.a.isPlaced() && e.b.isPlaced() ){
-                Coord c = getNearPlaceFree(e.b,e.a.getType());
-                if(c==null)continue;
-                places(e.a,c);
-            }
+
         }
     }
 
-    public void places(Person a,Coord c){
-        a.places(c);
-        floor[c.getY()][c.getX()].setPerson(a);
+    public void places(Person a,Place place){
+        a.setPlaced(true);
+        a.setXPosition(place.getX());
+        a.setYPosition(place.getY());
+        place.setPerson(a);
+
+        updateNearPersons(a,place.getY(),place.getX(),3);
+
     }
 
-    public Coord[] findTwoPlacesFree(char a,char b){
-        Coord[] coords = new Coord[2];
+    public void updatePeoplePlace(Person p, Place place){
+        pQueue.addAll(persons.stream().filter(x-> !x.isPlaced() && x.getType() == place.getType()
+                && x.getSociety().equals(p.getSociety())
+        ).map(x->new PeoplePlace(floor,x,place)).collect(Collectors.toList()));
+    }
 
-        for(int i=0;i<floor.length;i++){
-            for(int j=0;j<floor[i].length;j++){
-                if(floor[i][j].getPerson()!=null)continue;
-                char f = floor[i][j].getType();
-                if(f == a){
-                    coords[0] = new Coord(j,i);
-                    if( i+1 < floor.length && floor[i+1][j].getPerson() == null && floor[i+1][j].getType() == b ){
-                        coords[1] = new Coord(j,i+1);
-                        return coords;
+    public void updateNearPersons(Person p, int i,int j,int nNearToUpdatePeoplePlace){
+        nearPersons[i][j] = -1;
+        floor[i][j].setNearPersons(-1);
+
+        if( i+1 < floor.length && nearPersons[i+1][j] >= 0 ) {
+            nearPersons[i + 1][j]++;
+            floor[i+1][j].incNP();
+            if( nearPersons[i+1][j] >= nNearToUpdatePeoplePlace )
+                updatePeoplePlace(p,floor[i+1][j]);
+        }
+        if( j+1 < floor[i].length && nearPersons[i][j+1] >= 0 ) {
+            nearPersons[i][j + 1]++;
+            floor[i][j+1].incNP();
+            if( nearPersons[i][j+1] >= nNearToUpdatePeoplePlace )
+                updatePeoplePlace(p,floor[i][j+1]);
+        }
+        if( i-1 >= 0 && nearPersons[i-1][j] >= 0 ) {
+            nearPersons[i - 1][j]++;
+            floor[i-1][j].incNP();
+            if( nearPersons[i-1][j] >= nNearToUpdatePeoplePlace )
+                updatePeoplePlace(p,floor[i-1][j]);
+        }
+        if( j-1 >= 0 && nearPersons[i][j-1] >= 0 ) {
+            nearPersons[i][j - 1]++;
+            floor[i][j-1].incNP();
+            if( nearPersons[i][j-1] >= nNearToUpdatePeoplePlace )
+                updatePeoplePlace(p,floor[i][j-1]);
+        }
+    }
+
+    public Place[] findTwoPlacesFree(char a,char b){
+        Place[] ret = new Place[2];
+        if( a == b && b == '_'){
+            while (!placePairsDD.isEmpty()){
+                PlacePair p = placePairsDD.pop();
+                if( p.getA().getPerson() == null && p.getB().getPerson() == null ) {
+                    ret[0] = p.getA();
+                    ret[1] = p.getB();
+                    return ret;
+                }
+            }
+            return null;
+        }
+        if( a == b && b == 'M'){
+            while (!placePairsMM.isEmpty()){
+                PlacePair p = placePairsMM.pop();
+                if( p.getA().getPerson() == null && p.getB().getPerson() == null ) {
+                    ret[0] = p.getA();
+                    ret[1] = p.getB();
+                    return ret;
+                }
+            }
+            return null;
+        }
+        if( a == '_' && b == 'M') {
+            while (!placePairsDM_MD.isEmpty()){
+                PlacePair p = placePairsDM_MD.pop();
+                if( p.getA().getPerson() == null && p.getB().getPerson() == null ) {
+                    if(p.getType() == PlacePairType.DM) {
+                        ret[0] = p.getA();
+                        ret[1] = p.getB();
+                    }else{
+                        ret[0] = p.getB();
+                        ret[1] = p.getA();
                     }
-                    if( j+1 < floor[i].length && floor[i][j+1].getPerson() == null && floor[i][j+1].getType() == b ){
-                        coords[1] = new Coord(j+1,i);
-                        return coords;
+                    return ret;
+                }
+            }
+            return null;
+        }
+
+        if( a == 'M' && b == '_') {
+            while (!placePairsDM_MD.isEmpty()){
+                PlacePair p = placePairsDM_MD.pop();
+                if( p.getA().getPerson() == null && p.getB().getPerson() == null ) {
+                    if(p.getType() == PlacePairType.MD) {
+                        ret[0] = p.getA();
+                        ret[1] = p.getB();
+                    }else{
+                        ret[0] = p.getB();
+                        ret[1] = p.getA();
                     }
-                } else if(f == b){
-                    coords[1] = new Coord(j,i);
-                    if( i+1 < floor.length && floor[i+1][j].getPerson() == null && floor[i+1][j].getType() == a ){
-                        coords[0] = new Coord(j,i+1);
-                        return coords;
-                    }
-                    if( j+1 < floor[i].length && floor[i][j+1].getPerson() == null && floor[i][j+1].getType() == a ){
-                        coords[0] = new Coord(j+1,i);
-                        return coords;
-                    }
+                    return ret;
                 }
             }
         }
         return null;
     }
 
-    public Coord getNearPlaceFree(Person start,char dest){
+    public Place findNearPlaceFree(Person start,char dest){
         int i = start.getYPosition();
         int j = start.getXPosition();
+
+        List<Place> places = new ArrayList<>();
         if( i+1 < floor.length && floor[i+1][j].getPerson() == null && floor[i+1][j].getType() == dest ){
-            return new Coord(j,i+1);
+            places.add(floor[i+1][j]);
+            //return floor[i+1][j];
         }
         if(i-1 >= 0 && floor[i-1][j].getPerson() == null && floor[i-1][j].getType() == dest ){
-            return new Coord(j,i-1);
+            places.add(floor[i-1][j]);
+            //return floor[i-1][j];
         }
         if(j+1 < floor[i].length && floor[i][j+1].getPerson() == null && floor[i][j+1].getType() == dest){
-            return new Coord(j+1,i);
+            places.add(floor[i][j+1]);
+            //return floor[i][j+1];
         }
         if(j-1 >= 0 && floor[i][j-1].getPerson() == null && floor[i][j-1].getType() == dest){
-            return new Coord(j-1,i);
+            places.add(floor[i][j-1]);
+            //return floor[i][j-1];
         }
-        return null;
+        if(places.size()<=0)return null;
+        places.sort(Comparator.comparingInt(Place::getNearPersons));
+        return places.get(0);
     }
 
-}
-
-@Data
-@AllArgsConstructor
-class Coord{
-    private int x;
-    private int y;
-}
-
-@Data
-class Edge{
-    Person a;
-    Person b;
-    int score;
-
-    public Edge(Person a,Person b){
-        this.a=a;
-        this.b=b;
-        score=a.getBP(b) + a.getWP(b);
-    }
 }
