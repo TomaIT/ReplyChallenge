@@ -20,6 +20,18 @@ public class Person implements Comparable<Person> {
         return orderFile - o.orderFile;
     }
 
+    public char getType(){
+        if(this instanceof Developer)return '_';
+        if(this instanceof Manager)return 'M';
+        return 'X';
+    }
+
+    public void places(Coord coord){
+        placed = true;
+        xPosition = coord.getX();
+        yPosition = coord.getY();
+    }
+
     public int getWP(Person p){
         if(this instanceof Manager || p instanceof Manager)return 0;
 

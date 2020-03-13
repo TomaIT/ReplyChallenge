@@ -24,7 +24,6 @@ public class InputData {
     private LinkedList<Coord> devPlaces=new LinkedList<>();
     private LinkedList<Coord> managePlaces=new LinkedList<>();
 
-
     public InputData(String fileName) throws IOException {
         this.loadDataFromFile(fileName);
     }
@@ -83,7 +82,7 @@ public class InputData {
             managers.add(d);
         }
         in.close();
-        calcEdges();
+        //calcEdges();
     }
 
     public void calcEdges(){
@@ -134,35 +133,89 @@ public class InputData {
                 flag = true;
             }
         }
+    }
 
-/*
+    public void findSolution(){
+        while(!personQueue.isEmpty()){
+            Edge e = (Edge) personQueue.poll();
+            if( e.a.isPlaced() && e.b.isPlaced() )continue;
+            if( !e.a.isPlaced() && !e.b.isPlaced() ){
+                Coord[] c = findTwoPlacesFree(e.a.getType(),e.b.getType());
+                if(c == null)continue;
+                places(e.a,c[0]);
+                places(e.b,c[1]);
+                continue;
+            }
+            if( e.a.isPlaced() && !e.b.isPlaced() ){
+                Coord c = getNearPlaceFree(e.a,e.b.getType());
+                if(c==null)continue;
+                places(e.b,c);
+                continue;
+            }
+            if( !e.a.isPlaced() && e.b.isPlaced() ){
+                Coord c = getNearPlaceFree(e.b,e.a.getType());
+                if(c==null)continue;
+                places(e.a,c);
+            }
+        }
+    }
+
+    public void places(Person a,Coord c){
+        a.places(c);
+        floor[c.getY()][c.getX()].setPerson(a);
+    }
+
+    public Coord[] findTwoPlacesFree(char a,char b){
+        Coord[] coords = new Coord[2];
+
         for(int i=0;i<floor.length;i++){
-            for(int j=0;j<floor[0].length;j++){
-                switch (floor[i][j].getType()){
-                    case '#':
-                        break;
-                    case '_':
-                        if(!developers.isEmpty()){
-                            Person a = developers.poll();
-                            a.setXPosition(j);
-                            a.setYPosition(i);
-                            a.setPlaced(true);
-                            floor[i][j].setPerson(a);
-                        }
-                        break;
-                    case 'M':
-                        if(!managers.isEmpty()){
-                            Person a = managers.poll();
-                            a.setXPosition(j);
-                            a.setYPosition(i);
-                            a.setPlaced(true);
-                            floor[i][j].setPerson(a);
-                        }
-                        break;
+            for(int j=0;j<floor[i].length;j++){
+                if(floor[i][j].getPerson()!=null)continue;
+                char f = floor[i][j].getType();
+                if(f == a){
+                    coords[0] = new Coord(j,i);
+                    if( i+1 < floor.length && floor[i+1][j].getPerson() == null && floor[i+1][j].getType() == b ){
+                        coords[1] = new Coord(j,i+1);
+                        return coords;
+                    }
+                    if( j+1 < floor[i].length && floor[i][j+1].getPerson() == null && floor[i][j+1].getType() == b ){
+                        coords[1] = new Coord(j+1,i);
+                        return coords;
+                    }
+                } else if(f == b){
+                    coords[1] = new Coord(j,i);
+                    if( i+1 < floor.length && floor[i+1][j].getPerson() == null && floor[i+1][j].getType() == a ){
+                        coords[0] = new Coord(j,i+1);
+                        return coords;
+                    }
+                    if( j+1 < floor[i].length && floor[i][j+1].getPerson() == null && floor[i][j+1].getType() == a ){
+                        coords[0] = new Coord(j+1,i);
+                        return coords;
+                    }
                 }
             }
-        }*/
+        }
+        return null;
     }
+
+    public Coord getNearPlaceFree(Person start,char dest){
+        int i = start.getYPosition();
+        int j = start.getXPosition();
+        if( i+1 < floor.length && floor[i+1][j].getPerson() == null && floor[i+1][j].getType() == dest ){
+            return new Coord(j,i+1);
+        }
+        if(i-1 >= 0 && floor[i-1][j].getPerson() == null && floor[i-1][j].getType() == dest ){
+            return new Coord(j,i-1);
+        }
+        if(j+1 < floor[i].length && floor[i][j+1].getPerson() == null && floor[i][j+1].getType() == dest){
+            return new Coord(j+1,i);
+        }
+        if(j-1 >= 0 && floor[i][j-1].getPerson() == null && floor[i][j-1].getType() == dest){
+            return new Coord(j-1,i);
+        }
+        return null;
+    }
+
 }
 
 @Data

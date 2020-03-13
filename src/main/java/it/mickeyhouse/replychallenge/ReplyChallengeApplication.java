@@ -5,13 +5,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @SpringBootApplication
 public class ReplyChallengeApplication implements CommandLineRunner {
-    int n=3;
+    int n=1;
 
     public static void main(String[] args) {
         SpringApplication.run(ReplyChallengeApplication.class, args);
@@ -34,14 +32,24 @@ public class ReplyChallengeApplication implements CommandLineRunner {
         System.out.println(bestScore);
         best.saveInFile("./src/main/resources/" + out + ".txt");
     }
-    private void mamma(String filename,String out) throws IOException {
-       InputData a = new InputData(filename);
-       //while (!a.getPersonQueue().isEmpty())System.out.println(a.getPersonQueue().poll());
-        Solver solver = new Solver(a, a.getFloor().length, a.getFloor()[0].length);
-        solver.solve();
-        Solution s = new Solution(a.getPersons().toArray(new Person[0]), a.getFloor(),
-                a.getFloor().length, a.getFloor()[0].length);
-        s.saveInFile("./src/main/resources/" + out + ".txt");
+
+    private long findAndSolve(String filename,String out) throws IOException {
+        long bestScore = -1;
+        Solution best = null;
+        for(int i=0;i<n;i++) {
+            InputData a = new InputData(filename);
+            a.calcEdges();
+            a.findSolution();
+            Solution s = new Solution(a.getPersons().toArray(new Person[0]), a.getFloor(),
+                    a.getFloor().length, a.getFloor()[0].length);
+            long t = s.getScore();
+            if (t > bestScore) {
+                bestScore = t;
+                best = s;
+            }
+        }
+        best.saveInFile("./src/main/resources/solutions/"+ out+"_"+bestScore+ ".txt");
+        return bestScore;
     }
 
     @Override
@@ -54,13 +62,18 @@ public class ReplyChallengeApplication implements CommandLineRunner {
         x.add("./src/main/resources/e_igloos.txt");
         x.add("./src/main/resources/f_glitch.txt");
 
+        long start = System.currentTimeMillis();
         int i=0;
+        long tot=0;
         for(String s:x){
-            System.out.println(i);
-            mamma(s,String.valueOf(i));
+            long t=findAndSolve(s,String.valueOf(i));
+            System.out.println(i+": "+t);
             i++;
-
+            tot+=t;
         }
+        System.out.println("Score: "+tot);
+        System.out.println("Total Time: "+(System.currentTimeMillis()-start)+" ms");
+
     }
 
 }
